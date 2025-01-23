@@ -1,0 +1,170 @@
+recipie recommender
+Step into the shoes of an ML engineer working at food.com. Your job is to design a recommender system to recommend recipes to users based on their choice and the current recipe they are looking at. 
+
+ 
+
+The recommendation engine is a way to increase the website's user engagement. If a user is shown relevant recipes, they are more likely to spend more time on your site reading about recipes. Higher user engagement will likely result in more business opportunities like collaborations, promotions, etc.
+
+ 
+
+The performance of a recommendation engine will significantly impact the revenue your recipe site can generate. 
+
+ 
+
+Designing a recommender from scratch is a time-consuming task.  In this assignment, you are expected to explore the data and create features that will be used to build the recommender. 
+
+ 
+
+Data you will be working with
+
+You will be working with the two CSV files linked below. 
+
+# raw recipe data
+s3a://raw-recipes-clean-upgrad/RAW_recipes_cleaned.csv
+
+# raw ratings data
+s3a://raw-interactions-upgrad/RAW_interactions_cleaned.csv
+Recall projects you have done so far. You have approached EDA with an objective in mind and focused your attention on extracting only the features you think might help with the end goal. At this point, we would like to introduce the concept of structured EDA. 
+
+
+If you combine both data files, you will end up with the following features: 
+
+minutes 
+submitted
+tags 
+nutrition 
+n_steps 
+steps 
+description
+ingredients
+n_ingredients 
+date
+rating
+review
+The first approach to EDA is to cover all possibilities for all columns. For instance, consider the submitted column. It has the date on which the user submitted a given recipe. 
+
+You can use the current date to find the time duration that the recipe has been on your site. 
+You can also check if there is any correlation between the time period on the website and the average ratings a recipe gets. 
+If you subtract the submitted date from the review date, you will get a feature to measure the recipe's newness at the moment a user reviews it.
+These are just a few possibilities. Once you have all the possibilities you want to explore, use your domain knowledge to prioritize. Keep the features you think will help decide the rating of a recipe. 
+
+
+The second approach is project-specific. Focus on creating features that will help the model you are building. In this case, we will want to create features that capture the specifics of a recipe and user preferences. Imagine a hypothetical user who has rated a few dessert recipes highly. This user will likely rate other dessert recipes highly. You need to think of ways to capture both user preferences (this user likes deserts) and recipe details (this recipe is a dessert); they will add a lot of value to your model.  
+
+ Task 1: Read the data
+Read RAW_recipes.csv from S3 bucket.
+Ensure each field has the correct data type. 
+ 
+
+Task 2: Extract individual features from the nutrition column.
+Notice the nutrition column is read as a string when it should be an array of float values. Each row in the nutrition column contains seven values. Each value represents nutrition information. Your task is to separate the array into seven individual columns.
+
+Column before transformation
+
+nutrition
+[51.5, 0.0, 13.0, 0.0, 2.0, 0.0, 4.0]
+
+Columns after transformation 
+
+ 
+
+calories	total_fat_PDV	sugar_PDV	sodium_PDV	protein_PDV	saturated_fat_PDV	carbohydrates_PDV
+51.5
+
+0.0
+
+13.0
+
+0.0
+
+2.0
+
+0.0
+
+4.0
+
+Task 3: Standardize the nutrition values.
+The nutritional values in absolute terms will have a lot of variation. For example, a recipe serving six people (recipe A) will have more sugar than a recipe meant to serve one person (recipe B). But that does not necessarily imply that the sugar per person in recipe A is more than in recipe B. 
+
+Standardize the nutrition values. Convert the nutritional values to per 100 calories.
+
+ 
+
+Task 4: Convert the tags column from a string to an array of strings.
+Consider a data point from the tags column. 
+
+Sample List
+Sample List
+It appears like an array, but it is actually read as a string. 
+
+Tag read as string
+Tag read as string
+Convert the tags column from a string to an array of strings
+
+Task 5: Read the second data file
+Read the RAW_interaction.csv and join this interaction level file with the recipe level data frame. The resulting data frame should have all the interactions.  
+
+
+Task 6:  Create time-based features.
+Create features that capture the time passed between one review and the date on which the recipe was submitted. 
+Hint: Use the review_date and the submitted columns after you join the two data files.
+
+ 
+
+Task 7: Processing Numerical Columns  (Optional)
+You can add non-linearity to all numerical columns by converting them to categorical columns. For example, consider the minutes column. If we build a model using this feature, the model will consider the change between 15 minutes and 45 minutes, the same as 90 minutes to 120 minutes, which might not be true. Hence, we bin numerical columns and convert them to categorical, allowing a model the opportunity to build a nonlinear relationship.
+
+Convert all numerical columns mentioned below to categorical columns. Use the percentile approach to decide the category boundaries. The video below will walk you through a sample exploration exercise of a numerical column. You can repeat the same for all other numerical columns.
+
+Columns to be bucketized.
+
+years_since_submission_on_review_date
+minutes 
+calories 
+total_fat_PDV
+sugar_PDV
+sodium_PDV
+protein_PDV
+saturated_fat_PDV
+carbohydrates_PDV
+After creating buckets, study the variation of the average rating for each bucket and decide whether or not a particular bucketed column should be kept in the analysis. 
+
+Note that each numerical column will have some nuances. For instance, years_since_submission_on_review_date has some reviews given before the recipe was submitted. Since the number of such instances was low, Prakhar dropped those rows. Similarly, other columns also might have such caveats you are expected to identify and handle them. 
+
+Task 8: Create user-level features (Optional)
+Create user-level features. Each user will have some preference intrinsically captured in their ratings. For instance, let’s say a user tends to highly rate the recipes that take less than 30 minutes to make, and the same user rates the other recipes a bit lower. You need to come up with a way to capture such intrinsic feedback.
+create the following user-level features: 
+
+user_avg_rating
+user_avg_n_ratings
+user_avg_years_betwn_review_and_submission
+user_avg_prep_time_recipes_reviewed
+user_avg_n_steps_recipes_reviewed
+user_avg_n_ingredients_recipes_reviewed
+user_avg_years_betwn_review_and_submission_high_ratings
+user_avg_calories_recipes_reviewed
+user_avg_total_fat_per_100_cal_recipes_reviewed
+user_avg_sugar_per_100_cal_recipes_reviewed
+user_avg_sodium_per_100_cal_recipes_reviewed
+user_avg_protein_per_100_cal_recipes_reviewed
+user_avg_saturated_fat_per_100_cal_recipes_reviewed
+user_avg_carbohydrates_per_100_cal_recipes_reviewed
+user_avg_prep_time_recipes_reviewed_high_ratings
+user_avg_n_steps_recipes_reviewed_high_ratings
+user_avg_n_ingredients_recipes_reviewed_high_ratings
+Here, high ratings refer to only those reviews where the user has given five ratings
+to a recipe. After you create user-level features, do a thorough data check. You might have introduced null values to the data during your transformations. After these columns are created, you can also do the bucketing exercise on them. 
+
+ 
+
+Task 9: Create tag-level features (Optional)
+Extract tags-level features. If you extract and list unique tags and explore all the available tags, you will realize that tags hold a lot of information about the recipe. For example, the healthy tag signifies that the person who uploaded the recipe considers it healthy. If a user specifically looks for the healthy tag, you would want to recommend more healthy recipes to them.
+
+Find the most value-adding tags and create features to capture them. You will have to think of ways to encode the tags' features. We will be using one hot encoding. It is up to you to explore and choose the encoding that captures the tag's information better than one hot encoding.
+
+There are a few ways to identify the most value-adding tags. 
+
+Find the top 5 percentile of frequent tags. 
+Find the top 5 percentile of highest-rated tags. 
+Find the bottom 5 percentile of highest-rated tags. 
+ 
